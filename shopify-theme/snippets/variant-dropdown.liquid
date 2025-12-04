@@ -1,0 +1,49 @@
+<custom-variant-option data-item="{{ item }}" data-old-variant-id="{{ item.id }}">
+  {%- for option in product.options_with_values -%}
+    <div
+      class="product-form__input product-form__input--dropdown custom_variant_option"
+      data-option-name="{{ option.name | handleize }}"
+    >
+      <div class="select">
+        <select
+          class="select__select"
+          data-option-name="{{ option.name }}"
+          data-ignore-validity="true"
+        >
+          {%- for value in option.values -%}
+            <option
+              value="{{ value | escape }}"
+              class="{% if option_disabled %}dropdown_disabled{% endif %}"
+
+              {% for i in item.options_with_values %}
+                {% if i.name == option.name and i.value == value %}
+                  selected="selected"
+                {% endif %}
+              {% endfor %}
+            >
+              {% if option_disabled -%}
+                {{- 'products.product.value_unavailable' | t: option_value: value -}}
+              {%- else -%}
+                {{- value -}}
+              {%- endif %}
+            </option>
+          {% endfor %}
+        </select>
+        <span class="svg-wrapper">
+          {{- 'icon-caret.svg' | inline_asset_content -}}
+        </span>
+      </div>
+    </div>
+  {%- endfor -%}
+
+  <div class="custom_variant_option__select hidden">
+    {%- for option in product.variants -%}
+      <div
+        value="{{ option.id }}"
+        data-option-name="{{ option.title }}"
+      >
+        {{- option.title -}}
+      </div>
+    {%- endfor -%}
+  </div>
+</custom-variant-option>

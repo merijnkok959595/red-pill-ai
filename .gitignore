@@ -1,0 +1,64 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node modules
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.serverless/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# AWS
+.aws/
+*.pem
+
+# Serverless
+.serverless/
+compose.log
+
+# Dependencies
+package-lock.json
+yarn.lock
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Data files (sensitive)
+data/*.txt
+data/*.zip
+!data/.gitkeep
+
+# Deployment artifacts
+*.zip
+!SHADOWIFY.zip
+

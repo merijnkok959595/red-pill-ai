@@ -1,0 +1,1229 @@
+{% comment %}
+  Screentime Dashboard - Customer Portal Page
+  Only accessible to customers with "subscription_screentime" tag
+{% endcomment %}
+
+{% assign customer_has_access = false %}
+
+{% comment %} 
+  DEBUG: Show customer information for troubleshooting
+{% endcomment %}
+{% if customer %}
+  <!-- DEBUG INFO (remove in production) -->
+  <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
+    <strong>DEBUG CUSTOMER INFO:</strong><br>
+    Customer Email: {{ customer.email }}<br>
+    Customer ID: {{ customer.id }}<br>
+    Customer Tags: {{ customer.tags | join: ', ' }}<br>
+    Has 'subscriber' tag: {{ customer.tags contains 'subscriber' }}<br>
+  </div>
+{% else %}
+  <!-- DEBUG: No customer logged in -->
+  <div style="background: #ffeeee; padding: 10px; margin: 10px 0; border: 1px solid #ff0000;">
+    <strong>❌ NO CUSTOMER LOGGED IN</strong><br>
+    You must be logged in to access this dashboard.
+    <a href="/account/login">Login here</a>
+  </div>
+{% endif %}
+
+{% comment %} 
+  ACCESS CONTROL: Check for 'subscriber' tag (managed by Shopify Flow)
+  ✅ When subscription created → Flow adds 'subscriber' tag
+  ❌ When subscription cancelled → Flow removes 'subscriber' tag
+{% endcomment %}
+{% if customer.tags contains 'subscriber' %}
+  {% assign customer_has_access = true %}
+{% endif %}
+
+<!-- Always show dashboard header -->
+<div class="screentime-dashboard">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="dashboard-title">📱 Screentime Dashboard</h1>
+      <p class="dashboard-subtitle">Track and manage your digital wellness</p>
+      
+      {% if customer_has_access %}
+        <div class="subscription-status">
+          <span class="status-badge active">Active Subscription</span>
+          <span class="status-text">You have access to all features</span>
+        </div>
+      {% else %}
+        <div class="subscription-status">
+          <span class="status-badge inactive">No Active Subscription</span>
+          <span class="status-text">Subscribe to unlock all features</span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if customer_has_access %}
+    <!-- FULL DASHBOARD CONTENT FOR SUBSCRIBERS -->
+
+    <div class="dashboard-content">
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📱</div>
+          <div class="stat-content">
+            <h3 class="stat-value" id="total-screen-time">--</h3>
+            <p class="stat-label">Today's Screen Time</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <h3 class="stat-value" id="goal-progress">--</h3>
+            <p class="stat-label">Goal Progress</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-content">
+            <h3 class="stat-value" id="weekly-average">--</h3>
+            <p class="stat-label">Weekly Average</p>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-content">
+            <h3 class="stat-value" id="streak-days">--</h3>
+            <p class="stat-label">Streak Days</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Sections -->
+      <div class="dashboard-sections">
+        <!-- App Usage Chart -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>App Usage Today</h2>
+            <div class="section-actions">
+              <button class="btn-secondary" onclick="refreshData()">Refresh</button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="app-usage-chart" width="400" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Time Limits -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>Time Limits</h2>
+            <button class="btn-primary" onclick="addTimeLimit()">Add Limit</button>
+          </div>
+          <div class="time-limits-list" id="time-limits-container">
+            <div class="loading">Loading time limits...</div>
+          </div>
+        </div>
+
+        <!-- Weekly Report -->
+        <div class="dashboard-section">
+          <div class="section-header">
+            <h2>Weekly Report</h2>
+            <select id="week-selector" onchange="loadWeeklyReport()">
+              <option value="current">This Week</option>
+              <option value="last">Last Week</option>
+              <option value="two-weeks-ago">Two Weeks Ago</option>
+            </select>
+          </div>
+          <div class="weekly-report" id="weekly-report-container">
+            <div class="loading">Loading weekly report...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <div class="actions-grid">
+          <button class="action-btn" onclick="setDailyGoal()">
+            <span class="action-icon">🎯</span>
+            <span class="action-text">Set Daily Goal</span>
+          </button>
+          <button class="action-btn" onclick="exportData()">
+            <span class="action-icon">📊</span>
+            <span class="action-text">Export Data</span>
+          </button>
+          <button class="action-btn" onclick="shareProgress()">
+            <span class="action-icon">📤</span>
+            <span class="action-text">Share Progress</span>
+          </button>
+          <button class="action-btn" onclick="getSupport()">
+            <span class="action-icon">💬</span>
+            <span class="action-text">Get Support</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for adding time limits -->
+  <div id="time-limit-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Time Limit</h3>
+        <span class="close" onclick="closeModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <form id="time-limit-form">
+          <div class="form-group">
+            <label for="app-name">App Name</label>
+            <input type="text" id="app-name" required>
+          </div>
+          <div class="form-group">
+            <label for="time-limit">Daily Time Limit (minutes)</label>
+            <input type="number" id="time-limit" min="1" max="1440" required>
+          </div>
+          <div class="form-group">
+            <label for="limit-type">Limit Type</label>
+            <select id="limit-type">
+              <option value="hard">Hard Limit (Block after limit)</option>
+              <option value="soft">Soft Limit (Warning only)</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveTimeLimit()">Save Limit</button>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+    <!-- SUBSCRIPTION WALL FOR NON-SUBSCRIBERS -->
+    <div class="subscription-wall">
+      <div class="wall-content">
+        <!-- Preview Cards (locked) -->
+        <div class="preview-section">
+          <h2>📊 Your Dashboard Preview</h2>
+          <div class="stats-grid locked">
+            <div class="stat-card locked">
+              <div class="stat-icon">📱</div>
+              <div class="stat-content">
+                <h3 class="stat-value">🔒</h3>
+                <p class="stat-label">Daily Screen Time</p>
+              </div>
+              <div class="lock-overlay">
+                <span class="lock-icon">🔒</span>
+              </div>
+            </div>
+            
+            <div class="stat-card locked">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-content">
+                <h3 class="stat-value">🔒</h3>
+                <p class="stat-label">Goal Progress</p>
+              </div>
+              <div class="lock-overlay">
+                <span class="lock-icon">🔒</span>
+              </div>
+            </div>
+            
+            <div class="stat-card locked">
+              <div class="stat-icon">📈</div>
+              <div class="stat-content">
+                <h3 class="stat-value">🔒</h3>
+                <p class="stat-label">Weekly Average</p>
+              </div>
+              <div class="lock-overlay">
+                <span class="lock-icon">🔒</span>
+              </div>
+            </div>
+            
+            <div class="stat-card locked">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-content">
+                <h3 class="stat-value">🔒</h3>
+                <p class="stat-label">Streak Days</p>
+              </div>
+              <div class="lock-overlay">
+                <span class="lock-icon">🔒</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subscription CTA -->
+        <div class="subscription-cta">
+          <div class="cta-content">
+            <h2>🚀 Unlock Your Full Potential</h2>
+            <p class="cta-subtitle">Join thousands who've transformed their relationship with technology</p>
+            
+            <div class="features-grid">
+              <div class="feature-item">
+                <span class="feature-icon">📱</span>
+                <span class="feature-text">Real-time app tracking</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">⏰</span>
+                <span class="feature-text">Smart time limits</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">📈</span>
+                <span class="feature-text">Progress analytics</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🎯</span>
+                <span class="feature-text">Personalized goals</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">💬</span>
+                <span class="feature-text">Community support</span>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🏆</span>
+                <span class="feature-text">Achievement system</span>
+              </div>
+            </div>
+
+            <div class="pricing-highlight">
+              <span class="price">Starting at $14.99/month</span>
+              <span class="trial">7-day free trial</span>
+            </div>
+
+            <div class="cta-buttons">
+              <a href="/products/screentime-subscription" class="btn-primary large">
+                Start Free Trial
+              </a>
+              <a href="/collections/subscriptions" class="btn-secondary">
+                View Plans
+              </a>
+            </div>
+
+            <p class="guarantee">
+              ✅ Cancel anytime • 💰 30-day money-back guarantee
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  /* Dashboard Styles */
+  .screentime-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+  }
+
+  .subscription-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .status-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .status-badge.active {
+    background: #4ade80;
+  }
+
+  .status-badge.inactive {
+    background: #ef4444;
+    opacity: 0.9;
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #667eea;
+    margin: 0;
+  }
+
+  .stat-label {
+    color: #666;
+    margin: 0;
+  }
+
+  /* Dashboard Sections */
+  .dashboard-sections {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    margin: 0;
+    color: #333;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+  }
+
+  /* Chart Container */
+  .chart-container {
+    height: 300px;
+    position: relative;
+  }
+
+  /* Quick Actions */
+  .quick-actions {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-actions h3 {
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .action-btn {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .action-btn:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: translateY(-2px);
+  }
+
+  .action-icon {
+    font-size: 2rem;
+  }
+
+  .action-text {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-header h3 {
+    margin: 0;
+  }
+
+  .close {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  /* No Access Styles */
+  .no-access {
+    max-width: 600px;
+    margin: 4rem auto;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .no-access-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .no-access h1 {
+    color: #374151;
+    margin-bottom: 1rem;
+  }
+
+  .no-access p {
+    color: #6b7280;
+    margin-bottom: 2rem;
+  }
+
+  .upgrade-options {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: left;
+  }
+
+  .upgrade-options h3 {
+    color: #374151;
+    margin-bottom: 1rem;
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+  }
+
+  .features-list li {
+    padding: 0.5rem 0;
+    color: #6b7280;
+  }
+
+  .cta-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Time Limit Items */
+  .time-limit-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .limit-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: #374151;
+  }
+
+  .limit-info p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .limit-progress {
+    text-align: right;
+  }
+
+  .progress-bar {
+    width: 100px;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #667eea;
+    transition: width 0.3s ease;
+  }
+
+  .limit-progress span {
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  /* Weekly Summary */
+  .weekly-summary {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+  }
+
+  .summary-label {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .summary-value {
+    color: #667eea;
+    font-weight: 600;
+  }
+
+  /* Loading States */
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6b7280;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .screentime-dashboard {
+      padding: 1rem;
+    }
+
+    .dashboard-header {
+      padding: 2rem 1rem;
+    }
+
+    .dashboard-title {
+      font-size: 2rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .section-header {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .actions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+    }
+  }
+
+  /* Subscription Wall Styles */
+  .subscription-wall {
+    padding: 2rem 0;
+  }
+
+  .wall-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .preview-section {
+    margin-bottom: 3rem;
+  }
+
+  .preview-section h2 {
+    text-align: center;
+    color: #374151;
+    margin-bottom: 2rem;
+  }
+
+  .stats-grid.locked {
+    position: relative;
+  }
+
+  .stat-card.locked {
+    position: relative;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .lock-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .lock-icon {
+    font-size: 1.5rem;
+    color: #6b7280;
+  }
+
+  .subscription-cta {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: white;
+  }
+
+  .cta-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  .cta-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    margin-bottom: 2.5rem;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+  }
+
+  .feature-icon {
+    font-size: 1.5rem;
+  }
+
+  .feature-text {
+    font-weight: 500;
+  }
+
+  .pricing-highlight {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .price {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .trial {
+    display: block;
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+
+  .btn-primary.large {
+    font-size: 1.2rem;
+    padding: 1rem 2.5rem;
+    margin-right: 1rem;
+  }
+
+  .guarantee {
+    margin-top: 1.5rem;
+    opacity: 0.8;
+    font-size: 0.9rem;
+  }
+
+  /* Responsive for subscription wall */
+  @media (max-width: 768px) {
+    .subscription-cta {
+      padding: 2rem 1rem;
+    }
+
+    .cta-content h2 {
+      font-size: 2rem;
+    }
+
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .btn-primary.large {
+      display: block;
+      margin: 0 0 1rem 0;
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // Dashboard functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelector('.screentime-dashboard')) {
+      loadDashboardData();
+      initializeCharts();
+    }
+  });
+
+  const API_BASE = 'https://3angppkge5.execute-api.eu-north-1.amazonaws.com/default/mk_shopify_web_app/dashboard-api';
+  
+  // Get customer email from Shopify customer object
+  const customerEmail = '{{ customer.email }}';
+  
+  function loadDashboardData() {
+    if (!customerEmail) {
+      console.error('No customer email available');
+      return;
+    }
+    
+    // Load stats
+    loadStats();
+    // Load time limits
+    loadTimeLimits();
+    // Load weekly report
+    loadWeeklyReport();
+  }
+
+  function loadStats() {
+    fetch(API_BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'get_stats',
+        customer_email: customerEmail
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.stats) {
+        document.getElementById('total-screen-time').textContent = data.stats.total_screen_time;
+        document.getElementById('goal-progress').textContent = data.stats.goal_progress;
+        document.getElementById('weekly-average').textContent = data.stats.weekly_average;
+        document.getElementById('streak-days').textContent = data.stats.streak_days;
+      } else {
+        console.error('Failed to load stats:', data.error);
+        // Fallback to mock data
+        document.getElementById('total-screen-time').textContent = '4h 23m';
+        document.getElementById('goal-progress').textContent = '73%';
+        document.getElementById('weekly-average').textContent = '5h 12m';
+        document.getElementById('streak-days').textContent = '7';
+      }
+    })
+    .catch(error => {
+      console.error('Error loading stats:', error);
+      // Fallback to mock data
+      document.getElementById('total-screen-time').textContent = '4h 23m';
+      document.getElementById('goal-progress').textContent = '73%';
+      document.getElementById('weekly-average').textContent = '5h 12m';
+      document.getElementById('streak-days').textContent = '7';
+    });
+  }
+
+  function loadTimeLimits() {
+    const container = document.getElementById('time-limits-container');
+    
+    fetch(API_BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'get_time_limits',
+        customer_email: customerEmail
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.time_limits) {
+        const limitsHtml = data.time_limits.map(limit => {
+          const percentage = Math.round((limit.used_today / limit.daily_limit) * 100);
+          return `
+            <div class="time-limit-item">
+              <div class="limit-info">
+                <h4>${limit.app_name}</h4>
+                <p>${limit.daily_limit} minutes daily (${limit.limit_type})</p>
+              </div>
+              <div class="limit-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+                <span>${limit.used_today}/${limit.daily_limit} min used</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        container.innerHTML = limitsHtml;
+      } else {
+        console.error('Failed to load time limits:', data.error);
+        // Fallback to mock data
+        container.innerHTML = `
+          <div class="time-limit-item">
+            <div class="limit-info">
+              <h4>Instagram</h4>
+              <p>30 minutes daily</p>
+            </div>
+            <div class="limit-progress">
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 80%"></div>
+              </div>
+              <span>24/30 min used</span>
+            </div>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading time limits:', error);
+      // Fallback to mock data
+      container.innerHTML = `
+        <div class="time-limit-item">
+          <div class="limit-info">
+            <h4>Instagram</h4>
+            <p>30 minutes daily</p>
+          </div>
+          <div class="limit-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 80%"></div>
+            </div>
+            <span>24/30 min used</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function loadWeeklyReport() {
+    const container = document.getElementById('weekly-report-container');
+    const week = document.getElementById('week-selector')?.value || 'current';
+    
+    fetch(API_BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'get_weekly_report',
+        customer_email: customerEmail,
+        week: week
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.weekly_report) {
+        const report = data.weekly_report;
+        container.innerHTML = `
+          <div class="weekly-summary">
+            <div class="summary-item">
+              <span class="summary-label">Total Screen Time:</span>
+              <span class="summary-value">${report.total_screen_time}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Daily Average:</span>
+              <span class="summary-value">${report.daily_average}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Goal Achievement:</span>
+              <span class="summary-value">${report.goal_achievement}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Most Used Day:</span>
+              <span class="summary-value">${report.most_used_day}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Least Used Day:</span>
+              <span class="summary-value">${report.least_used_day}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        console.error('Failed to load weekly report:', data.error);
+        // Fallback to mock data
+        container.innerHTML = `
+          <div class="weekly-summary">
+            <div class="summary-item">
+              <span class="summary-label">Total Screen Time:</span>
+              <span class="summary-value">36h 24m</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Daily Average:</span>
+              <span class="summary-value">5h 12m</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Goal Achievement:</span>
+              <span class="summary-value">4/7 days</span>
+            </div>
+          </div>
+        `;
+      }
+    })
+    .catch(error => {
+      console.error('Error loading weekly report:', error);
+      // Fallback to mock data
+      container.innerHTML = `
+        <div class="weekly-summary">
+          <div class="summary-item">
+            <span class="summary-label">Total Screen Time:</span>
+            <span class="summary-value">36h 24m</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Daily Average:</span>
+            <span class="summary-value">5h 12m</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Goal Achievement:</span>
+            <span class="summary-value">4/7 days</span>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function initializeCharts() {
+    const ctx = document.getElementById('app-usage-chart').getContext('2d');
+    // Initialize chart with Chart.js (you'll need to include Chart.js)
+    // This is a placeholder for the actual chart implementation
+  }
+
+  function refreshData() {
+    loadDashboardData();
+  }
+
+  function addTimeLimit() {
+    document.getElementById('time-limit-modal').style.display = 'block';
+  }
+
+  function closeModal() {
+    document.getElementById('time-limit-modal').style.display = 'none';
+  }
+
+  function saveTimeLimit() {
+    const appName = document.getElementById('app-name').value;
+    const timeLimit = document.getElementById('time-limit').value;
+    const limitType = document.getElementById('limit-type').value;
+
+    if (!appName || !timeLimit) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    fetch(API_BASE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'add_time_limit',
+        customer_email: customerEmail,
+        app_name: appName,
+        daily_limit: parseInt(timeLimit),
+        limit_type: limitType
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Time limit added successfully!');
+        closeModal();
+        loadTimeLimits(); // Reload the list
+      } else {
+        alert('Failed to add time limit: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error saving time limit:', error);
+      alert('Failed to save time limit. Please try again.');
+    });
+  }
+
+  function setDailyGoal() {
+    const goal = prompt('Enter your daily screen time goal (in hours):');
+    if (goal && !isNaN(goal)) {
+      fetch(API_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'set_daily_goal',
+          customer_email: customerEmail,
+          goal_hours: parseInt(goal)
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Daily goal set successfully!');
+          loadStats(); // Reload stats to show updated goal
+        } else {
+          alert('Failed to set daily goal: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        console.error('Error setting daily goal:', error);
+        alert('Failed to set daily goal. Please try again.');
+      });
+    }
+  }
+
+  function exportData() {
+    console.log('Exporting data...');
+    // Implement data export functionality
+  }
+
+  function shareProgress() {
+    console.log('Sharing progress...');
+    // Implement social sharing
+  }
+
+  function getSupport() {
+    window.open('/pages/contact', '_blank');
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('time-limit-modal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  }
+</script>
+

@@ -1,0 +1,632 @@
+{%- if request.design_mode -%}
+  <style>
+    block-activation-info {
+      display: block;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      text-align: center;
+    }
+  </style>
+  <block-activation-info></block-activation-info>
+{%- endif -%}
+
+{%- content_for 'block', type: '_dbtfy-help-center', id: 'widget-help-center' -%}
+{%- content_for 'block', type: '_dbtfy-scroll-bar', id: 'widget-scroll-bar' -%}
+{%- content_for 'block', type: '_dbtfy-cart-favicon', id: 'widget-cart-favicon' -%}
+{%- content_for 'block', type: '_dbtfy-back-to-top', id: 'widget-back-to-top' -%}
+{%- content_for 'block', type: '_dbtfy-cart-notification', id: 'widget-cart-notification' -%}
+{%- content_for 'block', type: '_dbtfy-cart-reminder', id: 'widget-cart-reminder' -%}
+{%- content_for 'block', type: '_dbtfy-cookie-box', id: 'widget-cookie-box' -%}
+{%- content_for 'block', type: '_dbtfy-inactive-tab-message', id: 'widget-inactive-tab-message' -%}
+{%- content_for 'block', type: '_dbtfy-page-transition', id: 'widget-page-transition' -%}
+
+{%- content_for 'block', type: '_dbtfy-sticky-add-to-cart', id: 'widget-sticky-add-to-cart' -%}
+{%- content_for 'block', type: '_dbtfy-newsletter-popup', id: 'widget-newsletter-popup' -%}
+{%- content_for 'block', type: '_dbtfy-age-check', id: 'widget-age-check' -%}
+{%- content_for 'block', type: '_dbtfy-shop-protect', id: 'widget-shop-protect' -%}
+{%- content_for 'block', type: '_dbtfy-sales-popup', id: 'widget-sales-popup' -%}
+
+{%- content_for 'block', type: '_dbtfy-upsell-popup', id: 'widget-upsell-popup' -%}
+{%- content_for 'block', type: '_dbtfy-customizable-products', id: 'widget-customizable-products' -%}
+{%- content_for 'block', type: '_dbtfy-back-in-stock', id: 'widget-back-in-stock' -%}
+{%- content_for 'block', type: '_dbtfy-product-bullet-points', id: 'widget-product-bullet-points' -%}
+{%- content_for 'block', type: '_dbtfy-product-tabs', id: 'widget-product-tabs' -%}
+{%- content_for 'block', type: '_dbtfy-product-sharing', id: 'widget-product-sharing' -%}
+{%- content_for 'block', type: '_dbtfy-quantity-breaks', id: 'widget-quantity-breaks' -%}
+{%- content_for 'block', type: '_dbtfy-upsell-bundles', id: 'widget-upsell-bundles' -%}
+{%- content_for 'block', type: '_dbtfy-infinite-scroll', id: 'widget-infinite-scroll' -%}
+{%- content_for 'block', type: '_dbtfy-trust-badge', id: 'widget-trust-badge' -%}
+{%- content_for 'block', type: '_cart-upsells', id: 'widget-cart-upsells' -%}
+{%- content_for 'block', type: '_cart-timer-group', id: 'widget-cart-timer' -%}
+{%- content_for 'block', type: '_external-urls-handler', id: 'external-urls-handler' -%}
+
+{%- content_for 'blocks' -%}
+<script>
+  Debutify.variables = {
+    widgets: {
+      "dbtfy_age_check": {
+        enabled: {{ settings.dbtfy_age_check | json }},
+        name: "Age Check",
+        tier:"free"
+      },
+      "dbtfy_agree_to_terms": {
+        enabled: {{ settings.dbtfy_agree_to_terms | json }},
+        name: "Agree to Terms",
+        tier:"free"
+      },
+      "dbtfy_age_check": {
+        enabled: {{ settings.dbtfy_age_check | json }},
+        name: "Age Check",
+        tier:"free"
+      },
+      "dbtfy_cart_bubble": {
+        enabled: {{ settings.dbtfy_cart_bubble | json }},
+        name: "Cart Bubble",
+        tier:"free"
+      },
+      "dbtfy_cart_favicon": {
+        enabled: {{ settings.dbtfy_cart_favicon | json }},
+        name: "Cart Favicon",
+        tier:"free"
+      },
+      "dbtfy_cookie_box": {
+        enabled: {{ settings.dbtfy_cookie_box | json }},
+        name: "Cookie Box",
+        tier:"free"
+      },
+      "dbtfy_infinite_scroll": {
+        enabled: {{ settings.dbtfy_infinite_scroll | json }},
+        name: "Infinite Scroll",
+        tier:"free"
+      },
+      "dbtfy_linked_options": {
+        enabled: {{ settings.dbtfy_linked_options | json }},
+        name: "Linked Options",
+        tier:"free"
+      },
+      "dbtfy_page_transition": {
+        enabled: {{ settings.dbtfy_page_transition | json }},
+        name: "Page Transition",
+        tier:"free"
+      },
+      "dbtfy_scrollbar_cursor": {
+        enabled: {{ settings.dbtfy_scrollbar_cursor | json }},
+        name: "Scrollbar Cursor",
+        tier:"free"
+      },
+      "dbtfy_skip_cart": {
+        enabled: {{ settings.dbtfy_skip_cart | json }},
+        name: "Skip Cart",
+        tier:"free"
+      },
+      "dbtfy_add_on_cart": {
+        enabled: {{ settings.dbtfy_add_on_cart | json }},
+        name: "Add On Cart",
+        tier: "paid"
+      },
+      "dbtfy_addtocart_animation": {
+        enabled: {{ settings.dbtfy_addtocart_animation | json }},
+        name: "Add to Cart Animation",
+        tier: "paid"
+      },
+      "dbtfy_back_in_stock": {
+        enabled: {{ settings.dbtfy_back_in_stock | json }},
+        name: "Back in Stock",
+        tier: "paid"
+      },
+      "dbtfy_back_to_top": {
+        enabled: {{ settings.dbtfy_back_to_top | json }},
+        name: "Back to Top",
+        tier: "paid"
+      },
+      "dbtfy_cart_discount": {
+        enabled: {{ settings.dbtfy_cart_discount | json }},
+        name: "Cart Discount",
+        tier: "paid"
+      },
+      "dbtfy_cart_goal": {
+        enabled: {{ settings.dbtfy_cart_goal | json }},
+        name: "Cart Goal",
+        tier: "paid"
+      },
+      "dbtfy_cart_countdown_timer": {
+        enabled: {{ settings.dbtfy_cart_countdown_timer | json }},
+        name: "Cart Countdown Timer",
+        tier: "paid"
+      },
+      "dbtfy_cart_notification": {
+        enabled: {{ settings.dbtfy_cart_notification | json }},
+        name: "Cart Notification",
+        tier: "paid"
+      },
+      "dbtfy_cart_reminder": {
+        enabled: {{ settings.dbtfy_cart_reminder | json }},
+        name: "Cart Reminder",
+        tier: "paid"
+      },
+      "dbtfy_cart_savings": {
+        enabled: {{ settings.dbtfy_cart_savings | json }},
+        name: "Cart Savings",
+        tier: "paid"
+      },
+      "dbtfy_cart_testimonial": {
+        enabled: {{ settings.dbtfy_cart_testimonial | json }},
+        name: "Cart Testimonial",
+        tier: "paid"
+      },
+      "dbtfy_cart_upsell": {
+        enabled: {{ settings.dbtfy_cart_upsell | json }},
+        name: "Cart Upsell",
+        tier: "paid"
+      },
+      "dbtfy_cart_benefits": {
+        enabled: {{ settings.dbtfy_cart_benefits | json }},
+        name: "Cart Benefits",
+        tier: "paid"
+      },
+      "dbtfy_collection_filters": {
+        enabled: {{ settings.dbtfy_collection_filters | json }},
+        name: "Collection Filters",
+        tier: "paid"
+      },
+      "dbtfy_customizable_products": {
+        enabled: {{ settings.dbtfy_customizable_products | json }},
+        name: "Customizable Products",
+        tier: "paid"
+      },
+      "dbtfy_delivery_date": {
+        enabled: {{ settings.dbtfy_delivery_date | json }},
+        name: "Delivery Date",
+        tier: "paid"
+      },
+      "dbtfy_delivery_time": {
+        enabled: {{ settings.dbtfy_delivery_time | json }},
+        name : "Delivery Time",
+        tier: "paid"
+      },
+      "dbtfy_cart_variant_picker": {
+        enabled: {{ settings.dbtfy_cart_variant_picker | json }},
+        name: "Variant Picker",
+        tier: "paid"
+      },
+      "dbtfy_discount_saved": {
+        enabled: {{ settings.dbtfy_discount_saved | json }},
+        name : "Discount Saved",
+        tier: "paid"
+      },
+      "dbtfy_external_urls_handler": {
+        enabled: {{ settings.dbtfy_external_urls_handler | json }},
+        name: "External URLs Handler",
+        tier: "paid"
+      },
+      "dbtfy_gift_wrap": {
+        enabled: {{ settings.dbtfy_gift_wrap | json }},
+        name: "Gift Wrap",
+        tier: "paid"
+      },
+      "dbtfy_inactive_tab_message": {
+        enabled: {{ settings.dbtfy_inactive_tab_message | json }},
+        name: "Inactive Tab Message",
+        tier: "paid"
+      },
+      "dbtfy_inventory_quantity": {
+        enabled: {{ settings.dbtfy_inventory_quantity | json }},
+        name: "Inventory Quantity",
+        tier: "paid"
+      },
+      "dbtfy_mega_menu": {
+        enabled: {{ settings.dbtfy_mega_menu | json }},
+        name: "Mega Menu",
+        tier: "paid"
+      },
+      "dbtfy_minimum_order": {
+        enabled: {{ settings.dbtfy_minimum_order | json }},
+        name: "Minimum Order",
+        tier: "paid"
+      },
+      "dbtfy_newsletter_popup": {
+        enabled: {{ settings.dbtfy_newsletter_popup | json }},
+        name: "Newsletter Popup",
+        tier: "paid"
+      },
+      "dbtfy_order_feedback": {
+        enabled: {{ settings.dbtfy_order_feedback | json }},
+        name: "Order Feedback",
+        tier: "paid"
+      },
+      "dbtfy_product_bullet_points": {
+        enabled: {{ settings.dbtfy_product_bullet_points | json }},
+        name: "Product Bullet Points",
+        tier: "paid"
+      },
+      "dbtfy_product_tabs": {
+        enabled: {{ settings.dbtfy_product_tabs | json }},
+        name: "Product Tabs",
+        tier: "paid"
+      },
+      "dbtfy_product_sharing": {
+        enabled: {{ settings.dbtfy_product_sharing | json }},
+        name: "Product Sharing",
+        tier: "paid"
+      },
+      "dbtfy_quantity_breaks": {
+        enabled: {{ settings.dbtfy_quantity_breaks | json }},
+        name: "Quantity Breaks",
+        tier: "paid"
+      },
+      "dbtfy_recently_viewed": {
+        enabled: {{ settings.dbtfy_recently_viewed | json }},
+        name: "Recently Viewed",
+        tier: "paid"
+      },
+      "dbtfy_remove_debutify_branding": {
+        enabled: {{ settings.dbtfy_remove_debutify_branding | json }},
+        name: "Remove Debutify Branding",
+        tier: "paid"
+      },
+      "dbtfy_sale_popup_notification": {
+        enabled: {{ settings.dbtfy_sale_popup_notification | json }},
+        name: "Sale Popup Notification",
+        tier: "paid"
+      },
+      "dbtfy_shipping_calculator": {
+        enabled: {{ settings.dbtfy_shipping_calculator | json }},
+        name: "Shipping Calculator",
+        tier: "paid"
+      },
+      "dbtfy_shop_protect": {
+        enabled: {{ settings.dbtfy_shop_protect | json }},
+        name: "Shop Protect",
+        tier: "paid"
+      },
+      "dbtfy_show_second_image_on_hover": {
+        enabled: {{ settings.dbtfy_show_second_image_on_hover | json }},
+        name: "Show Second Image on Hover",
+        tier: "paid"
+      },
+      "dbtfy_star_rating": {
+        enabled: {{ settings.dbtfy_star_rating | json }},
+        name: "Star Rating",
+        tier: "paid"
+      },
+      "dbtfy_show_product_card_carousel": {
+        enabled: {{ settings.dbtfy_show_product_card_carousel | json }},
+        name: "Product Card Carousel",
+        tier: "paid"
+      },
+      "dbtfy_size_chart": {
+        enabled: {{ settings.dbtfy_size_chart | json }},
+        name: "Size Chart",
+        tier: "paid"
+      },
+      "dbtfy_sticky_addtocart": {
+        enabled: {{ settings.dbtfy_sticky_addtocart | json }},
+        name: "Sticky Add to Cart",
+        tier: "paid"
+      },
+      "dbtfy_sticky_header": {
+        enabled: {{ settings.dbtfy_sticky_header | json }},
+        name: "Sticky Header",
+        tier: "paid"
+      },
+      "dbtfy_synced_variant_image": {
+        enabled: {{ settings.dbtfy_synced_variant_image | json }},
+        name: "Synced Variant Image",
+        tier: "paid"
+      },
+      "dbtfy_upsell_bundles": {
+        enabled: {{ settings.dbtfy_upsell_bundles | json }},
+        name: "Upsell Bundles",
+        tier: "paid"
+      },
+      "dbtfy_upsell_popup": {
+        enabled: {{ settings.dbtfy_upsell_popup | json }},
+        name: "Upsell Popup",
+        tier: "paid"
+      },
+      "dbtfy_product_as_variant": {
+        enabled: {{ settings.dbtfy_product_as_variant | json }},
+        name: "Product as Variant",
+        tier: "paid"
+      },
+      "dbtfy_variant_swatches": {
+        enabled: {{ settings.dbtfy_variant_swatches | json }},
+        name: "Variant Swatches",
+        tier: "paid"
+      },
+      "dbtfy_quick_view": {
+        enabled: {{ settings.dbtfy_quick_view | json }},
+        name: "Quick View",
+        tier: "paid"
+      },
+      "dbtfy_quick_compare": {
+        enabled: {{ settings.dbtfy_quick_compare | json }},
+        name: "Quick Compare",
+        tier: "paid"
+      },
+      "dbtfy_wish_list": {
+        enabled: {{ settings.dbtfy_wish_list | json }},
+        name: "Wish List",
+        tier: "paid"
+      },
+      "dbtfy_product_image_crop": {
+        enabled: {{ settings.dbtfy_product_image_crop | json }},
+        name: "Product Image Crop",
+        tier: "paid"
+      },
+      "dbtfy_product_zooming": {
+        enabled: {{ settings.dbtfy_product_zooming | json }},
+        name: "Product Zooming",
+        tier: "paid"
+      },
+      "predictive_search_enabled": {
+        enabled: {{ settings.predictive_search_enabled | json }},
+        name: "Predictive Search",
+        tier: "paid"
+      }
+    },
+    sections:{
+      "dbtfy_announcement_bar": {
+        enabled: {{ settings.dbtfy_announcement_bar | json }},
+        name : "Announcement Bar",
+        tier:"free"
+      },
+      "dbtfy_featured_blog": {
+        enabled: {{ settings.dbtfy_featured_blog | json }},
+        name : "Featured Blog",
+        tier:"free"
+      },
+      "dbtfy_breadcrumbs": {
+        enabled: {{ settings.dbtfy_breadcrumbs | json }},
+        name : "Breadcrumbs",
+        tier:"free"
+      },
+      "dbtfy_featured_collection": {
+        enabled: {{ settings.dbtfy_featured_collection | json }},
+        name : "Featured Collection",
+        tier:"free"
+      },
+      "dbtfy_featured_product": {
+        enabled: {{ settings.dbtfy_featured_product | json }},
+        name : "Featured Product",
+        tier:"free"
+      },
+      "dbtfy_image_banner": {
+        enabled: {{ settings.dbtfy_image_banner | json }},
+        name : "Image Banner",
+        tier:"free"
+      },
+      "dbtfy_image_with_text": {
+        enabled: {{ settings.dbtfy_image_with_text | json }},
+        name : "Image with Text",
+        tier:"free"
+      },
+      "dbtfy_newsletter": {
+        enabled: {{ settings.dbtfy_newsletter | json }},
+        name : "Newsletter",
+        tier:"free"
+      },
+      "dbtfy_slideshow": {
+        enabled: {{ settings.dbtfy_slideshow | json }},
+        name : "Slideshow",
+        tier:"free"
+      },
+      "dbtfy_trust_badge": {
+        enabled: {{ settings.dbtfy_trust_badge | json }},
+        name : "Trust Badge",
+        tier:"free"
+      },
+      "dbtfy_before_after_image": {
+        enabled: {{ settings.dbtfy_before_after_image | json }},
+        name : "Before After Image",
+        tier:"paid"
+      },
+      "dbtfy_collections_list": {
+        enabled: {{ settings.dbtfy_collections_list | json }},
+        name : "Collections List",
+        tier:"paid"
+      },
+      "dbtfy_collage": {
+        enabled: {{ settings.dbtfy_collage | json }},
+        name : "Collage",
+        tier:"paid"
+      },
+      "dbtfy_collpasible_content": {
+        enabled: {{ settings.dbtfy_collpasible_content | json }},
+        name : "Collapsable Content",
+        tier:"paid"
+      },
+      "dbtfy_contact_form": {
+        enabled: {{ settings.dbtfy_contact_form | json }},
+        name : "Contact Form",
+        tier:"paid"
+      },
+      "dbtfy_contact_form_builder": {
+        enabled: {{ settings.dbtfy_contact_form_builder | json }},
+        name : "Contact Form Builder",
+        tier:"paid"
+      },
+      "dbtfy_countdown_sale": {
+        enabled: {{ settings.dbtfy_countdown_sale | json }},
+        name : "Countdown Sale",
+        tier:"paid"
+      },
+      "dbtfy_custom_liquid": {
+        enabled: {{ settings.dbtfy_custom_liquid | json }},
+        name : "Custom Liquid",
+        tier:"paid"
+      },
+      "dbtfy_custom_code": {
+        enabled: {{ settings.dbtfy_custom_code | json }},
+        name : "Custom Code",
+        tier:"paid"
+      },
+      "dbtfy_double_image_banner": {
+        enabled: {{ settings.dbtfy_double_image_banner | json }},
+        name : "Double Image Banner",
+        tier:"paid"
+      },
+      "dbtfy_extended_collections_list": {
+        enabled: {{ settings.dbtfy_extended_collections_list | json }},
+        name : "Extended Collections List",
+        tier:"paid"
+      },
+      "dbtfy_faq": {
+        enabled: {{ settings.dbtfy_faq | json }},
+        name : "FAQ",
+        tier:"paid"
+      },
+      "dbtfy_featured_image": {
+        enabled: {{ settings.dbtfy_featured_image | json }},
+        name : "Featured Image",
+        tier:"paid"
+      },
+      "dbtfy_guarantee": {
+        enabled: {{ settings.dbtfy_guarantee | json }},
+        name : "Guarantee",
+        tier:"paid"
+      },
+      "dbtfy_instagram_feed": {
+        enabled: {{ settings.dbtfy_instagram_feed | json }},
+        name : "Instagram Feed",
+        tier:"paid"
+      },
+      "dbtfy_logo_list": {
+        enabled: {{ settings.dbtfy_logo_list | json }},
+        name : "Logo List",
+        tier:"paid"
+      },
+      "dbtfy_lookbook": {
+        enabled: {{ settings.dbtfy_lookbook | json }},
+        name : "Lookbook",
+        tier:"paid"
+      },
+      "dbtfy_map": {
+        enabled: {{ settings.dbtfy_map | json }},
+        name : "Map",
+        tier:"paid"
+      },
+      "dbtfy_menu_bar": {
+        enabled: {{ settings.dbtfy_menu_bar | json }},
+        name : "Menu Bar",
+        tier:"paid"
+      },
+      "dbtfy_multicolumn": {
+        enabled: {{ settings.dbtfy_multicolumn | json }},
+        name : "Multicolumn",
+        tier:"paid"
+      },
+      "dbtfy_multirow": {
+        enabled: {{ settings.dbtfy_multirow | json }},
+        name : "Multirow",
+        tier:"paid"
+      },
+      "dbtfy_order_tracking": {
+        enabled: {{ settings.dbtfy_order_tracking | json }},
+        name : "Order Tracking",
+        tier:"paid"
+      },
+      "dbtfy_parallax_image": {
+        enabled: {{ settings.dbtfy_parallax_image | json }},
+        name : "Parallax Image",
+        tier:"paid"
+      },
+      "dbtfy_pricing_table": {
+        enabled: {{ settings.dbtfy_pricing_table | json }},
+        name : "Pricing Table",
+        tier:"paid"
+      },
+      "dbtfy_quick_order_list": {
+        enabled: {{ settings.dbtfy_quick_order_list | json }},
+        name : "Quick Order List",
+        tier:"paid"
+      },
+      "dbtfy_related_products": {
+        enabled: {{ settings.dbtfy_related_products | json }},
+        name : "Related Products",
+        tier:"paid"
+      },
+      "dbtfy_result_section": {
+        enabled: {{ settings.dbtfy_result_section | json }},
+        name : "Result Section",
+        tier:"paid"
+      },
+      "dbtfy_rich_text": {
+        enabled: {{ settings.dbtfy_rich_text | json }},
+        name : "Rich Text",
+        tier:"paid"
+      },
+      "dbtfy_sticky_image": {
+        enabled: {{ settings.dbtfy_sticky_image | json }},
+        name : "Sticky Image",
+        tier:"paid"
+      },
+      "dbtfy_scrolling_banner": {
+        enabled: {{ settings.dbtfy_scrolling_banner | json }},
+        name : "Scrolling Banner",
+        tier:"paid"
+      },
+      "dbtfy_separator": {
+        enabled: {{ settings.dbtfy_separator | json }},
+        name : "Separator",
+        tier:"paid"
+      },
+      "dbtfy_split_video_with_text": {
+        enabled: {{ settings.dbtfy_split_video_with_text | json }},
+        name : "Split Video with Text",
+        tier:"paid"
+      },
+      "dbtfy_social_discount": {
+        enabled: {{ settings.dbtfy_social_discount | json }},
+        name : "Social Discount",
+        tier:"paid"
+      },
+      "dbtfy_testimonials": {
+        enabled: {{ settings.dbtfy_testimonials | json }},
+        name : "Testimonials",
+        tier:"paid"
+      },
+      "dbtfy_text_columns_with_images": {
+        enabled: {{ settings.dbtfy_text_columns_with_images | json }},
+        name : "Text Columns with Images",
+        tier:"paid"
+      },
+      "dbtfy_video": {
+        enabled: {{ settings.dbtfy_video | json }},
+        name : "Video",
+        tier:"paid"
+      },
+      "dbtfy_ugc_carousel": {
+        enabled: {{ settings.dbtfy_ugc_carousel | json }},
+        name : "UGC Carousel",
+        tier:"paid"
+      }
+    }
+  };
+</script>
+{% schema %}
+{
+  "name": "t:sections.dbtfy_widgets.name",
+  "class": "details",
+  "limit": 1,
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "blocks": [{ "type": "@theme" }, { "type": "_dbtfy-variant-swatches" }, { "type": "_dbtfy-product-swatches" }],
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:sections.widget-notice.header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.widget-notice.label"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:sections.widget-notice.link"
+    }
+  ]
+}
+{% endschema %}

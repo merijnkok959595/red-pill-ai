@@ -1,0 +1,348 @@
+{%- if request.design_mode -%}
+  {%- render 'widget-blocker-warning',
+    enabled: settings.dbtfy_sticky_addtocart,
+    type: 'widget',
+    as: 'block',
+    name: 'Sticky Add To Cart',
+    id: block
+  -%}
+{% endif %}
+
+{%- if request.design_mode or settings.dbtfy_sticky_addtocart -%}
+  {%- render 'widget-settings', key: 'sticky-add-to-cart', settings: block.settings -%}
+  {%- if request.page_type == 'product' -%}
+    <link
+      rel="stylesheet"
+      href="{{ 'dbtfy-sticky-add-to-cart.css' | asset_url }}"
+      media="print"
+      onload="this.media='all'"
+    >
+    {% liquid
+      assign current_variant = product.selected_or_first_available_variant
+    %}
+    <dbtfy-addtocart-sticky
+      data-block-id="{{ block.id }}"
+      data-close-icon="Close"
+      data-color-scheme="{{ block.settings.color_scheme }}"
+      data-custom-color-scheme="{{ block.settings.custom_color_scheme }}"
+      data-position="{{ block.settings.dbtfy_sticky_addtocart_position }}"
+      id="dbtfy-addtocart-sticky-{{ block.settings.block.id }}"
+      class="hidden dbtfy-addtocart-sticky  color-{{ block.settings.color_scheme }} show-on--{{ block.settings.show_on }}"
+      data-trigger-type="{{ block.settings.dbtfy_sticky_addtocart_trigger_type }}"
+      data-scroll-depth="{{ block.settings.dbtfy_sticky_addtocart_scroll_percentage }}"
+      data-has-only-default-variant="{{ product.has_only_default_variant }}"
+      data-showon="{{ block.settings.show_on }}"
+      data-addtocart-simplified="{{ block.settings.dbtfy_addtocart_simplified_mobile_display }}"
+    >
+      <div
+        class="dbtfy-addtocart-sticky inner-spacing"
+        {{ block.shopify_attributes }}
+      >
+        <div class="grid">
+          <div class="dbtfy-addtocart-sticky-left ">
+
+
+
+
+{% assign sticky_image = nil %}
+
+{% if product.featured_media %}
+  {% if product.featured_media.media_type == 'video' or product.featured_media.media_type == 'external_video' %}
+    {% assign sticky_image = product.featured_media.preview_image %}
+  {% elsif product.featured_media.media_type == 'image' %}
+    {% assign sticky_image = product.featured_media %}
+  {% endif %}
+{% endif %}
+
+{% if sticky_image %}
+  <div class="global-media-settings">
+    <img
+      src="{{ sticky_image | image_url: width: 56, height: 56, crop: 'center' }}"
+      alt="{{ product.title }}"
+      loading="lazy"
+      width="56"
+      height="56"
+    >
+  </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+            <div>
+              <h3 class="title h5">{{ product.title }}</h3>
+              {% if block.settings.dbtfy_sticky_addtocart_show_star_rating %}
+                {% render 'product-rating', product: product, position: 'product_grid' %}
+              {% endif %}
+              {% if product.has_only_default_variant %}
+                {% render 'price', product: product, use_variant: true, show_compare_at_price: false %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="dbtfy-addtocart-sticky-right">
+
+
+
+
+
+
+
+            
+<product-form data-block-id="{{ block.id }}">
+  {%- form 'product', product, class: 'form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+    <input type="hidden" name="id" value="49692077785335">
+    <input type="hidden" name="quantity" value="1">
+    <input type="hidden" name="selling_plan" value="3231154423">
+
+    <div class="w-full">
+      <element-animator
+        data-enabled="true"
+        data-animation="dbtfy-element-animation-tada"
+        data-interval="5"
+        data-duration="1"
+        data-selector="#ProductSubmitButton-{{ block.id }}"
+      >
+        <button
+          id="ProductSubmitButton-{{ block.id }}"
+          type="submit"
+          name="add"
+          class="button button--primary"
+          {% unless product.first_available_variant.available %}
+            disabled
+          {% endunless %}
+        >
+          <span>
+            {%- if product.first_available_variant == null -%}
+              {{ 'products.product.unavailable' | t }}
+            {%- elsif product.first_available_variant.available == false -%}
+              {{ 'products.product.sold_out' | t }}
+            {%- else -%}
+              {{ 'products.product.add_to_cart' | t }}
+            {%- endif -%}
+          </span>
+
+          {%- render 'loading-spinner' -%}
+        </button>
+      </element-animator>
+    </div>
+  {% endform %}
+</product-form>
+
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+    </dbtfy-addtocart-sticky>
+  {% endif %}
+{% endif %}
+
+<script src="{{ 'dbtfy-sticky-add-to-cart.js' | asset_url }}" defer="defer"></script>
+{% schema %}
+{
+  "name": "t:blocks.sticky_add_to_cart.name",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:blocks.sticky_add_to_cart.help.info"
+    },
+    {
+      "type": "header",
+      "content": "t:blocks.help.header"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:blocks.sticky_add_to_cart.help.link"
+    },
+    {
+      "type": "paragraph",
+      "content": "t:blocks.help.paid_info"
+    },
+    {
+      "type": "select",
+      "id": "show_on",
+      "label": "t:sections.all.show_on.label",
+      "default": "both",
+      "options": [
+        {
+          "value": "desktop-only",
+          "label": "t:sections.all.show_on.options__1.label"
+        },
+        {
+          "value": "mobile-only",
+          "label": "t:sections.all.show_on.options__2.label"
+        },
+        {
+          "value": "both",
+          "label": "t:sections.all.show_on.options__3.label"
+        }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "dbtfy_sticky_addtocart_show_star_rating",
+      "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_show_star_rating.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "dbtfy_sticky_addtocart_enable_animation",
+      "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_enable_animation.label",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "dbtfy_addtocart_simplified_mobile_display",
+      "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_simplify_on_mobile.label",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "dbtfy_addtocart_animation_type",
+      "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.label",
+      "default": "tada",
+      "options": [
+        {
+          "value": "bounce",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__1.label"
+        },
+        {
+          "value": "flash",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__2.label"
+        },
+        {
+          "value": "pulse",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__3.label"
+        },
+        {
+          "value": "shakeX",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__4.label"
+        },
+        {
+          "value": "shakeY",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__5.label"
+        },
+        {
+          "value": "tada",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__6.label"
+        },
+        {
+          "value": "heartBeat",
+          "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_element_animation_type.options__7.label"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "dbtfy_addtocart_animation_interval",
+      "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_elment_animation_interval.label",
+      "min": 3,
+      "max": 20,
+      "unit": "s",
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "dbtfy_addtocart_animation_duration",
+      "label": "t:settings_schema.global.settings.element-animation.settings.dbtfy_elment_animation_duration.label",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "select",
+      "id": "dbtfy_sticky_addtocart_position",
+      "label": "t:general.settings.position.label",
+      "options": [
+        {
+          "value": "top",
+          "label": "t:general.settings.alignment.option__1"
+        },
+        {
+          "value": "bottom",
+          "label": "t:general.settings.alignment.option__3"
+        }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "select",
+      "id": "dbtfy_sticky_addtocart_trigger_type",
+      "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_trigger_type.label",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "t:sections.all.button.options__2.label"
+        },
+        {
+          "value": "scroll_depth",
+          "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_trigger_type.options__2.label"
+        }
+      ],
+      "default": "scroll"
+    },
+    {
+      "type": "range",
+      "id": "dbtfy_sticky_addtocart_scroll_percentage",
+      "label": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_scroll_percentage.label",
+      "min": 30,
+      "max": 80,
+      "step": 1,
+      "default": 50,
+      "unit": "%",
+      "info": "t:blocks.sticky_add_to_cart.settings.dbtfy_sticky_addtocart_scroll_percentage.info"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.color_schemes.header.heading.label",
+      "info": "t:sections.all.color_schemes.header.info.content"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "t:sections.all.color_schemes.default.label",
+      "options": [
+        {
+          "value": "scheme-1",
+          "label": "t:sections.all.color_schemes.default.options__1.label"
+        },
+        {
+          "value": "scheme-2",
+          "label": "t:sections.all.color_schemes.default.options__2.label"
+        },
+        {
+          "value": "scheme-3",
+          "label": "t:sections.all.color_schemes.default.options__3.label"
+        },
+        {
+          "value": "scheme-4",
+          "label": "t:sections.all.color_schemes.default.options__4.label"
+        },
+        {
+          "value": "custom",
+          "label": "t:general.settings.size.option__9"
+        }
+      ],
+      "default": "scheme-3"
+    },
+    {
+      "type": "color_scheme",
+      "id": "custom_color_scheme",
+      "label": "t:sections.all.color_schemes.custom.label",
+      "default": "scheme-1"
+    }
+  ]
+}
+{% endschema %}
